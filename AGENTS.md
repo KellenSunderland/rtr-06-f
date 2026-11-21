@@ -2,12 +2,21 @@
 
 ## Code Review Rules
 
-# Review policy: critical bugs only
+# Review policy: verify what a change assumes about other code
 
-Comment ONLY on definite defects that would cause incorrect behaviour, data loss, crashes,
-resource exhaustion, or security vulnerabilities in the changed code. Each comment must name
-the concrete failure and how it is triggered. Do NOT comment on style, naming, formatting,
-documentation, tests, performance that is not a correctness problem, hypothetical or
-speculative issues, or anything outside the lines changed by the pull request. If you are not
-confident a problem is real, stay silent. Fewer, certain findings are strongly preferred over
-coverage.
+Many serious bugs come from a change that is correct by itself but wrong about code it depends
+on. In addition to your normal review, do the following for every pull request.
+
+1. List what the change relies on outside the lines it touches: functions it calls, data it
+   reads, events and fields it consumes or produces, and identifiers it stores or compares.
+2. Open the definition of each one, and at least one other caller or consumer. Do not rely on
+   names or comments.
+3. Check that the change agrees with what that code actually does. In particular check units
+   and time bases; the order of returned results; whether an identifier is unique globally or
+   only within a scope; who owns a resource and where access is checked; whether a collection
+   is complete or has been sampled, filtered or evicted; which component is the source of
+   truth for a value; and the error and empty paths.
+4. Read CONTRACTS.md and the doc comments of the code the change depends on, and flag any
+   invariant the change breaks.
+5. Report each mismatch as a bug. Name the file and symbol outside the diff that the change
+   gets wrong, and say what input triggers the failure.
